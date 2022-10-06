@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .forms import CashbookForm
 from django.utils import timezone
 from .models import Cashbook
+from django.contrib import auth
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 
 # Create your views here.
 
@@ -51,3 +53,36 @@ def delete(request, id):
     cashbooks = get_object_or_404(Cashbook, id=id)
     cashbooks.delete()
     return redirect('read')
+
+def signup(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid() :
+            user = form.save()
+            auth.login(request, user)
+            return redirect('main')
+        else : 
+            return render(request, 'signup.html', {'form':form})
+    else:
+        form = UserCreationForm()
+        return render(request, 'signup.html', {'form':form})
+
+#로그인
+def login(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(data=request.POST)
+        if form.is_valid() :
+            user = form.get_user()
+            auth.login(request, user)
+            return redirect('main')
+        else : 
+            return render(request, 'login.html', {'form':form})
+    else:
+        form = AuthenticationForm()
+        return render(request, 'login.html', {'form':form})
+
+#로그아웃
+def logout(request):
+    auth.logout(request)
+    return redirect('main')
+    
